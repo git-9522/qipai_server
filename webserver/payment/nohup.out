@@ -1,0 +1,8 @@
+Traceback (most recent call last):
+  File "run.py", line 5, in <module>
+    app = create_app()
+  File "/home/dev/server/server-new/frame/webserver/payment/app/__init__.py", line 18, in create_app
+    app.config.from_pyfile(config)
+  File "/usr/local/lib/python2.7/dist-packages/flask/config.py", line 129, in from_pyfile
+    with open(filename, mode='rb') as config_file:
+IOError: [Errno 2] Unable to load configuration file (No such file or directory): '/home/dev/projects/starry/frame/webserver/payment/config/local.cfg'

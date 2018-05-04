@@ -1,0 +1,61 @@
+local M = {}
+
+M.RSP_SUCESS = 0 --成功回应
+
+M.INPUT_ERROR = 10000  --参数错误
+M.ACCOUNT_VERIFY_FAIL = 10001    --账号验证失败
+M.TOURIST_REGISTER_FAIL = 10002  --游客注册失败
+M.PHONE_IS_REGISTED = 10003      --手机已经被注册
+M.WAIT_TO_VERIFY    = 10004      --请耐心等待验证
+M.PHONE_REGISTER_FAIL = 10005    --手机注册失败
+M.GET_VERIFY_CODE_FAIL = 10006   --获取手机验证码
+M.PHONE_LOGIN_VERIFY_FAIL = 10007   --手机登录验证失败
+M.VERIFY_CODE_EXCEPT = 10008     --验证码不正确或者已经过期
+M.VERIFY_IS_NOT_EXIST = 10009    --手机不存在
+M.VERIFY_ERROR_RETRY = 10010    --校验失败请重试
+M.EXPIRED_LOGIN = 10011   --登录过期
+
+M.REGISTERED_PHONE = 10014 		--手机已被注册
+M.WAITING_FOR_rand_CODE = 10015  --请耐心等待验证码
+
+M.NO_PLAYER_IN_POSITION = 10020       --没有玩家在该位置上
+M.PASSWORD_IS_ERROR = 10021           --房间密码错误
+M.GOLD_IS_NOT_ENOUGH = 10022          --金币不足
+M.NOT_ENOUGH_GEMS = 10023             --宝石不足
+M.GOLD_OUT_OF_MAX = 10024  		      --金币超过上限
+M.ROOMDATA_CONFIG_ERROR = 10025       --该房间类型配置错误
+M.PLAYER_HAS_NO_TABLE = 10026         --玩家没在牌桌上面
+M.PLAYER_NOT_IN_MATCH_LIST = 10027    --玩家不在匹配队列里面
+M.PLAYER_IS_ON_TABLE = 10028          --玩家已经在牌局中
+M.PLAYER_IS_MATCH_LIST = 10029        --玩家已经在匹配队列中
+M.FRIENDROOMDATA_CONFIG_ERROR = 10030 --好友房配置错误
+M.ROOMCARD_IS_NOT_ENOUGH = 10031      --房卡不足
+M.JIABEI_CRAD_IS_LESS = 10032         --加倍卡不足
+M.FTABLE_DISS_FAIL    = 10033 		  --房间解散失败
+M.HAS_NOT_CARD_NOTE   = 10034         --没有记牌器
+
+M.TODAY_IS_ALREADY_SIGN = 10040 --今日已经签到
+M.TASK_IS_NOT_EXIST = 10041 --任务不存在
+M.TABLE_IS_NOT_EXISTING = 10050 --桌子已经不存在了
+M.ALRAEDY_TAKE = 10042  --已经领取
+M.CANNOT_TAKE = 10043   --不可领取
+M.CANNOT_ENTER_TEMOPORARILY = 10045   --好友房暂时无法进入
+M.NO_SUCH_FRIEND_TABLE = 10051   --没有这个好友房
+M.HAS_CHANGED_NAME = 10052  --已经改过名字，不能再次修改
+M.FAILED_TO_MATCH_PLAYER = 10053  --进房失败
+
+M.PERMISSION_DENIDE = 10054 --没有权限
+M.ARLEADY_AGREE = 10055 --已经已经同意解散房间
+M.FULL_PLAYERS_IN_FRIEND_ROOM = 10056 --好友房已满
+M.CAN_NOT_CHANGE_NAME = 10057 --不能改变名字
+M.INVALID_SEX = 10058 --非法性别
+M.INVALID_NAME = 10059 --名字非法
+M.ALREADY_START = 10060 --已经开局不能离开
+M.CANNOT_BUY_DURING_PLAYING = 10061 --正在牌局中，不能购买
+M.REQ_CHAT_TOO_FAST = 10062 --发言太快
+M.CANNOT_ENTER_FTABLE_LOCKED = 10063   --您已经在对局中无法进入好友房
+M.PLAYING_CANNOT_MINGPAI = 10064    --出牌阶段不能明牌
+M.REQ_INTERACT_TOO_FAST = 10065 --互动太频繁
+M.PLAYER_NOT_ON_TABLE = 10066 --你已经不在桌子上了
+
+return M

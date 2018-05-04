@@ -1,0 +1,41 @@
+server_name='paysvr'
+server_id=1
+
+frame_root = './frame/'
+root = frame_root .. "paysvr/"
+skynet_root = "deps/skynet/"
+thread = 2
+harbor = 0
+start = "main"	-- main script
+bootstrap = "snlua bootstrap"	-- The service for bootstrap
+luaservice = frame_root .."services/?.lua;" .. root.."services/?.lua;" .. frame_root .."test/?.lua;" .. skynet_root.."service/?.lua;"..skynet_root.."test/?.lua;"
+lualoader = skynet_root .. "lualib/loader.lua"
+lua_path = frame_root .. 'common/?.lua;'.. 
+	frame_root .. 'lualib/?.lua;'.. 
+	skynet_root.."lualib/?.lua;"..
+	skynet_root.."lualib/?/init.lua;".. 
+	skynet_root..'proto/lualib/?.lua;'..
+    	skynet_root.."lualib/compat10/?.lua;"
+
+lua_cpath = frame_root .. 'luaclib/?.so;' .. skynet_root .. "luaclib/?.so"
+cpath = skynet_root.."cservice/?.so"
+
+all_proxy_address='127.0.0.1:8556'
+preload='frame/lualib/preload.lua'
+
+db_host="127.0.0.1"
+db_port=3306
+db_user='root'
+db_password='123456'
+db_name='payment'
+
+
+debug_console_port=19384
+
+router_path = frame_root .. 'router_conf/router.lua'
+configs=frame_root .. 'configs'
+
+--daemon = "/data/skynet-run/" .. server_name .. server_id .. ".pid"
+logpath = "/data/skynet-rlog/"
+logger = "logger"
+logservice = "snlua"

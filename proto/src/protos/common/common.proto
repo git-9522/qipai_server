@@ -1,0 +1,9 @@
+package common;
+
+message GENERAL_NOTICE {
+    optional uint32 id = 1 [default = 0];
+    optional int32 type = 2 [default = 0];
+    optional uint32 business_id = 3 [default = 0];
+    optional bool been_read = 4 [default = false];
+    optional string notice = 5 [default = ''];
+}

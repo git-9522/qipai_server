@@ -1,0 +1,60 @@
+package mail;   
+
+message REQ_MAIL_LIST{
+
+}
+
+message AttachInfo{
+    optional int32 id = 1[default = 0];
+    optional int32 count = 2[default = 0];
+}
+
+message MailAttachInfo
+{
+    optional int32 mail_seq = 1[default = 0];
+    repeated AttachInfo attach_list = 2;
+}
+
+message MailInfo{
+    optional int32 mail_seq = 1[default = 0];
+    optional string title = 2[default = ''];
+    optional string content = 3[default = ''];
+    optional int32 send_time = 4[default=0];
+    repeated AttachInfo attach_list = 5;
+}
+
+message RSP_MAIL_LIST{
+    repeated MailInfo mail_list = 1;
+    optional int32 result = 2[default = 0];
+}
+
+message REQ_DEL_MAIL{
+    optional int32 mail_seq = 1[default = 0];
+}
+message RSP_DEL_MAIL{
+    optional int32 mail_seq = 1[default = 0];
+    optional int32 result = 2[default = 0];
+}
+
+ message REQ_TAKE_ATTACH{
+     optional int32 mail_seq = 1[default = 0]; 
+ }
+
+ message RSP_TAKE_ATTACH{
+     optional int32 result = 1[default = 0];
+     repeated AttachInfo attach_list = 2;
+     optional int32 mail_seq = 3[default = 0];
+ }
+
+ message REQ_ALL_MAIL_ATTACH{
+
+ }
+
+ message RSP_ALL_MAIL_ATTACH{
+     repeated MailAttachInfo mail_attach_list = 1;
+     optional int32 result = 2[default = 0];
+ }
+
+ message NTF_NEW_MAIL{
+     optional int32 count = 1[default=0];
+ }

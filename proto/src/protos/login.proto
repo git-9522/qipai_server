@@ -1,0 +1,28 @@
+package login;
+
+message REQ_LOGIN{
+	optional string device_id = 1[default = ''];	//设备ID
+	optional string device_brand = 2[default = ''];	//品牌
+	optional int32 channel_id = 3[default = 0];	//渠道id
+}
+
+message RSP_LOGIN{
+	optional string name = 1[default = ''];
+	optional int32 gems = 2[default = 0];
+	optional int32 coins = 3[default = 0];
+	optional fixed32 server_time = 4[default = 0];
+	optional uint32 ping_interval = 5[default = 0];
+	optional int32 level = 6[default = 0];
+	optional string icon = 7[default = ''];	//假如icon以http开头，则是一个url地址，如果不是则是一个头像ID编号
+	optional int32 play_total_count = 8[default = 0];	//总牌局数
+	optional int32 play_win_count = 9[default = 0];	//赢牌局数
+	optional int32 sex = 10[default = 0];	//玩家性别,1男2女
+	optional int32 roomcards = 11[default = 0];	//房卡数量
+	optional int32 result = 12[default = 0];
+	optional bool can_change_name = 13[default = false];
+}
+
+message NTF_LOGOUT{
+	optional int32 reason = 1[default = 0];	//被登出的原因
+	optional string description = 2[default = '']; 
+}

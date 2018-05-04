@@ -1,0 +1,97 @@
+package account;
+
+message REQ_VERIFY{
+	optional fixed32 uid = 1[default = 0];
+    optional string key_token = 2[default = ''];
+}
+
+message RSP_VERIFY{
+    optional int32 result = 1[default = 0];//检验结果,0表示成功
+	optional fixed32 uid = 2[default = 0];
+    optional string key_token = 4[default = ''];
+    optional string channel = 5[default = ''];//微信是wx
+}
+
+message REQ_REGISTER_TOURIST{
+    optional string seed_token = 1[default = '']; //种子token,根据种子token来生成账号
+}
+
+message RSP_REGISTER_TOURIST{
+    optional int32 result = 1[default = 0];
+    optional string key_token = 2[default = ''];
+    optional fixed32 uid = 3[default = 0];
+}
+
+message REQ_REGISTER_PHONE{
+    optional string phone_number = 1[default = ''];
+    optional string tourist_key_token = 2[default = ''];//待绑定的游客token
+}
+
+message RSP_REGISTER_PHONE{
+    optional int32 result = 1[default = 0];//0表示验证码已发,-11表示手机已被注册过了,-15请耐心等待验证码
+}
+
+message REQ_VERIFY_REGISTER_CODE{
+    optional string phone_number = 1[default = ''];
+    optional string code = 2[default = ''];
+}
+
+message RSP_VERIFY_REGISTER_CODE{
+    optional int32 result = 1[default = 0];
+    optional string key_token = 2[default = ''];
+    optional fixed32 uid = 3[default = 0];
+    optional string tourist_key_token = 4[default = ''];//已绑定的游客token
+}
+
+message REQ_GET_LOGIN_CODE{
+    optional string phone_number = 1[default = ''];
+}
+
+message RSP_GET_LOGIN_CODE{
+    optional int32 result = 1[default = 0]; //0表示验证码已发
+}
+
+message REQ_VERIFY_LOGIN_CODE{
+    optional string phone_number = 1[default = ''];
+    optional string code = 2[default = ''];
+}
+
+message RSP_VERIFY_LOGIN_CODE{
+    optional int32 result = 1[default = 0];
+    optional string key_token = 2[default = ''];
+    optional fixed32 uid = 3[default = 0];
+}
+
+message REQ_MAKE_ORDER{
+    optional int32 product_id = 1[default = 0]; //要购买的产品id
+    optional int32 channel_id = 2[default = 0];    //渠道:IOS用99表示
+	optional fixed32 uid = 3[default = 0];
+}
+
+message RSP_MAKE_ORDER{
+    optional int32 result = 1[default = 0];
+    optional string order_id = 2[default = ''];
+}
+
+message REQ_CHECK_PAYMENT{
+    optional string receipt = 1[default = ''];
+    optional string order_id = 2[default = ''];
+}
+
+message RSP_CHECK_PAYMENT{
+    optional int32 result = 1[default = 0];
+}
+
+
+message REQ_VERIFY_3RD_LOGIN{
+    optional fixed32 uid = 1[default = 0];
+    optional string code = 2[default = ''];
+    optional string channel = 3[default = ''];//微信是wx
+}
+
+message RSP_VERIFY_3RD_LOGIN{
+    optional int32 result = 1[default = 0];
+    optional string key_token = 2[default = ''];
+    optional fixed32 uid = 3[default = 0];
+    optional string channel = 4[default = ''];//微信是wx
+}

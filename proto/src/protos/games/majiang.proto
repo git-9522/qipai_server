@@ -1,0 +1,576 @@
+package majiang;
+
+/*
+麻将(麻雀)	Mahjongg / Mahjong	　
+张	Tile	麻将牌面
+花	Flower	泛指春、夏、秋、冬、梅、兰、竹、菊
+字牌(役牌)	Honor	泛指东、南、西、北、中、发、白
+花色(配牌)	Suit	筒、条、万
+数字	Rank	一~九
+箭牌	Dragon	中、发、白
+风牌	Wind	东、南、西、北
+筒牌	Dot；Circle	一到九筒，或称一到九饼
+条牌	Bamboo	一到九条，或称一到九索
+万牌	Character	一到九万
+春、夏、秋、冬	Spring / Summer / Autumn / Winter	　
+梅、兰、竹、菊	Plum / Orchid / Bamboo / Chrysanthemum	　
+中、发、白	Red / Green / White Dragon	民间英语还流传着一些比较通俗的译法，如红中为“red center”；发财为“getting rich”；白板为“whit board”。
+东、南、西、北	East / South / West / North Wind	　
+门风(自风)	Dealer's Wind	　
+场风(圈风)	Prevailing Wind	　
+庄家	Dealer / Banker	　
+发牌	Deal	　
+骰子	Die (pl. Dice)	　
+洗牌	Shuffle	　
+砌牌	forming the wall of stacks	　
+牌墙	Wall	　
+牌墩	Stack	牌墙中的上下两张牌组成一墩
+牌桌	Board	　
+和(胡)牌	Win	　
+和(胡)张	Winning Tile	　
+荒牌(流局)	Draw	即无人胡牌
+摸牌	Draw	　
+打牌	Discard	　
+听牌	Ready Hand	　
+混牌(百搭)	Joker	　
+玩家	Player	　
+一组	Meld	一个顺子、刻子或杠子
+将牌(雀头、对子)	Eyes / Pair	　
+刻子	Triplet	　
+顺子	Sequence	　
+明杠、暗杠	Exposed / Concealed Kong	　
+碰、杠、吃	Pong / Kong / Chow	此译法遵循音译
+自摸	winning by one's own draw；self-drawn	　
+数番	Scoring	　
+番数	Points	　
+诈和	declaring a false win；falsely declaring a win	　
+*/
+
+/*约定牌编号
+        11-19   万
+        21-29   筒
+        31-39   索
+        41-47   东南西北中发白   
+        51-58   春夏秋冬梅兰竹菊
+*/
+message PlayerInfo{
+    optional fixed32 uid = 1[default = 0];
+    optional string name  = 2[default = ''];
+    optional int32 position = 3[default = 0];   //1.2.3.4
+    optional int32 coins = 4[default = 0];  //玩家身上的金币
+    optional string icon = 5[default = ''];   //玩家的头像
+    optional uint32 sex = 6[default = 1];  //1:男   2:女 
+     /*
+     玩家状态 
+        位1-2:准备状态：0：未准备   1：准备  2:玩牌状态 
+        位3：离线状态：0：离线  1：在线 
+        位4：托管状态：0：不托管    1：托管
+    */
+    optional int32 state = 7[default = 0];
+    optional string player_ip = 8[default = ''];   //玩家ip
+}
+
+/*
+    麻将牌的ID定义:
+
+*/
+
+message PengGangInfo {
+    optional int32 tile = 1[default = 0];//碰杠的牌
+    optional fixed32 uid = 2[default = 0];//被碰杠的人
+}
+
+message PlayerTileInfo{
+    optional fixed32 uid = 1[default = 0];
+    optional int32 tile_count = 2[default = 0]; //-1表示读tile_list
+    repeated int32 tile_list = 3;   //麻将牌列表
+    repeated PengGangInfo peng_list = 8;//碰牌列表
+    repeated PengGangInfo gang_list = 9;//杠牌列表
+    repeated int32 angang_list = 10; //暗杠列表
+
+    optional int32 dingque = 11[default = 0];//定缺 [0：无，1：条，2：筒，3：万]
+    repeated int32 discarded_tiles = 12; //打过的牌
+    optional int32 win_tile = 13[default = 0];//胡牌[0：无胡牌]
+}
+
+message OptionMessage{
+    optional bool peng = 1[default = false];//可以碰
+    optional bool gang = 2[default = false];//可以杠
+    optional bool angang = 3[default = false];//可以暗杠
+    optional bool hu = 4[default = false];//可以胡
+}
+
+message HuansanzhangData{
+    repeated int32 tile_list = 1;   //三张牌
+    optional int32 exchange_end_time = 2[default = 0];//换三张结束时间
+    repeated int32 default_tile_list = 3;   //默认三张牌
+}
+
+message DingqueData{
+    optional int32 que = 1[default = 0];//定缺颜色
+    optional int32 dingque_end_time = 2[default = 0];//定缺结束时间
+}
+
+message PlayingData{
+    optional fixed32 curr_player_uid = 1[default = 0];//当前出牌的玩家
+    optional int32 curr_player_tile = 2[default = 0];   //当前操作玩家的牌，0 表示未出
+    optional int32 curr_end_time = 3[default = 0];//当前操作等待结束时间
+    optional OptionMessage option = 4;        //玩家可操作选项
+}
+
+//碰牌，杠牌需要明牌显示
+message GameStatus{
+    repeated PlayerTileInfo player_tile_info_list = 1;
+    optional fixed32 banker_uid = 2[default = 0];//庄家uid
+    optional int32 cur_status = 3[default = 0];   //1未开始 2游戏换三张中 3游戏定缺中 4游戏打牌中
+    optional HuansanzhangData huangsanzhang_data = 4;
+    optional DingqueData dingque_data = 5;
+    optional PlayingData playing_data = 6;
+    optional uint32 die_num = 7[default = 0];  ////两个骰子数[66]表示两颗都是6,纯表现用
+    optional uint32 left_tile_count = 8[default = 0];  //剩余牌数量
+}
+
+//通知游戏开始
+message NTF_START{
+    optional GameStatus game_status = 1;  //游戏状态
+    optional uint32 fround = 2[default = 0]; //房卡模式第几轮
+}
+
+message TableConf{
+    optional fixed32 creator_uid = 1[default = 0];  //房主
+    optional uint32 total_round = 2[default = 0];  //好友房总共有多少局
+    optional uint32 curr_round = 3[default = 0];   //当前是第几局
+    optional uint32 limit_rate = 4[default = 0];   //封顶积分
+    optional uint32 password = 5[default = 0];     //房间号码
+    optional uint32 zimo_addition = 6[default = 0]; //自摸加底--1 自摸加番--2
+    optional uint32 dianganghua   = 7[default = 0]; //点杠花(自摸)--1 点杆花(点炮)--2
+    optional bool exchange_three = 8[default = false];       //是否换三张
+    optional bool hujiaozhuanyi = 9[default = false];      //是否呼叫转移
+    optional bool daiyaojiu = 10[default = false];          //带吆九
+    optional bool duanyaojiu = 11[default = false];          //断吆九
+    optional bool jiangdui = 12[default = false];            //将对
+    optional bool mengqing = 13[default = false];           //是否可以门清
+    optional bool tiandi_hu = 14[default = false];           //是否可以天地胡
+    optional bool haidilaoyue = 15[default = false];     //是否可以海底捞月
+    optional uint32 base_score = 16[default = 0];       //底分
+}
+
+message EnterInfo{
+    repeated PlayerInfo player_info_list = 1;//玩家信息
+    optional TableConf  ftable_info = 2;  //房间信息
+    optional GameStatus game_status = 3;  //游戏信息
+}
+
+//打牌
+message REQ_DISCARD{
+    optional int32 tile = 1[default = 0];
+}
+
+message RSP_DISCARD{
+    optional int32 result = 1[default = 0];
+    optional int32 tile = 2[default = 0];
+}
+
+message NTF_DISCARD{
+    optional fixed32 uid = 1[default = 0];
+    optional int32 tile = 2[default = 0];
+
+    //假如有其它玩家要得起当前打出的这张牌，则会刷新等待时间
+    optional int32 new_end_time = 3[default = 0];
+}
+
+//下一个打牌玩家
+message NTF_NEXT_DISCARD_PLAYER{
+    optional fixed32 uid = 1[default = 0];//下一个打牌的玩家
+    optional bool is_draw = 2[default = false];//是否抽牌
+    optional int32 op_end_time = 3[default = 0]; //操作结束时间
+    optional int32 tile = 4[default = 0];
+}
+
+//抽牌
+message NTF_DRAW_TILE{
+    optional int32 tile = 1[default = 0];//玩家抽到的牌，该字段仅自己可见
+    optional OptionMessage option = 2;//操作
+    optional int32 op_end_time = 3[default = 0]; //操作结束时间
+}
+
+message NTF_PLAYER_OPTION{
+    optional OptionMessage option = 1;//操作
+    optional int32 op_end_time = 2[default = 0]; //操作结束时间
+}
+
+//胡牌
+message REQ_WIN{
+
+}
+
+message RSP_WIN{
+    optional int32 result = 1[default = 0];
+}
+
+message AddtionTpye{
+    optional bool duanyaojiu = 1[default = false];       //断吆九
+    optional bool mengqing = 2[default = false];         //门清
+    optional bool haidilaoyue = 3[default = false];      //海底捞月
+    optional bool dianganghua = 4[default = false];      //点杠花
+    optional bool gangshangpao = 5[default = false];     //杠上炮
+    optional uint32 zimo_addition = 6[default = 0];      //1--自摸加底 2--自摸加倍
+    optional uint32 gen_count = 7[default = 0];          //根的数量
+    optional uint32 tiandihu = 8[default = 0];           //1--天胡 2--地胡
+    optional bool  gangshanghua = 9[default = false];    //杠上花
+    optional bool  qianggang = 10[default = false];      //抢杠
+}
+
+message NTF_WIN{
+    optional fixed32 uid = 1[default = 0];
+    optional uint32 tile = 2;
+    optional uint32 hu_type = 3;
+    optional fixed32 fangpao_uid = 4[default = 0];
+    optional AddtionTpye addtion = 5;
+}
+
+//碰牌
+message REQ_PENG{
+
+}
+
+message RSP_PENG{
+    optional int32 result = 1[default = 0];
+    optional uint32 tile = 2;
+}
+
+message NTF_PENG{
+    optional fixed32 uid = 1[default = 0];
+    optional uint32 tile = 2;
+    optional fixed32 penged_uid = 3[default = 0]; 
+}
+
+//杠牌
+message REQ_GANG{
+    optional uint32 tile = 1;//杠那张牌
+}
+
+message RSP_GANG{
+    optional int32 result = 1[default = 0];
+    optional uint32 gang_type = 2[default = 0];       //1--杠 2--暗杠 3--补杠
+    optional uint32 tile = 3;
+    optional fixed32 ganged_uid = 4[default = 0]; 
+}
+
+message NTF_GANG{
+    optional fixed32 uid = 1[default = 0];
+    optional uint32 gang_type = 2[default = 0];       //1--杠 2--暗杠 3--补杠
+    optional uint32 tile = 3;
+    optional fixed32 ganged_uid = 4[default = 0]; 
+}
+
+//过牌
+message REQ_PASS{
+
+}
+
+message RSP_PASS{
+    optional int32 result = 1[default = 0];
+}
+
+message NTF_PASS{
+    optional fixed32 uid = 1[default = 0];
+}
+
+
+message CreateConf{
+    optional uint32 total_count   = 1[default = 0];         //总局数
+    optional uint32 limit_rate    = 2[default = 0];         //封顶倍数
+    optional uint32 zimo_addition = 3[default = 0];         //自摸加成 自摸不加倍--0 自摸加底--1 自摸加番--2
+    optional uint32 dianganghua   = 4[default = 0];         //点杠花(自摸)--1 点杆花(点炮)--2
+    optional bool exchange_three = 5[default = false];      //是否换三张
+    optional bool hujiaozhuanyi = 6[default = false];       //是否呼叫转移
+    optional bool daiyaojiu = 7[default = false];           //带吆九
+    optional bool duanyaojiu = 8[default = false];          //断吆九
+    optional bool jiangdui = 9[default = false];            //将对
+    optional bool mengqing = 10[default = false];           //是否可以门清
+    optional bool tiandi_hu = 11[default = false];          //是否可以天地胡
+    optional bool haidilaoyue = 12[default = false];        //是否可以海底捞月
+}
+
+//通知玩家状态
+message NTF_EVENT{
+    optional fixed32 uid = 1;
+    optional int32 state = 2[default = 0];  //位1-2:准备状态：0：未准备   1：准备  2:玩牌状态 位3：离线状态：0：离线  1：在线 位4：托管状态：0：不托管    1：托管
+}
+
+message NTF_PLAYER_ENTER{
+    optional PlayerInfo player = 1;
+}
+
+//准备游戏
+message REQ_READY{
+
+}
+
+message RSP_READY{
+    optional int32 result = 1[default = 0]; //钱不够不能准备
+}
+
+message REQ_LEAVE{
+    
+}
+
+message RSP_LEAVE{
+    optional int32 result = 1[default = 0];
+    optional int32 status = 2[default = 0];
+}
+
+message NTF_PLAYER_LEAVE{
+    optional fixed32 uid = 1[default = 0];
+    optional int32 status = 2[default = 0];    //0是走人，1是离线
+}
+
+message NTF_EXCHANGE_THREE_START{
+    repeated int32 tile_list = 1;   //提示的三张牌
+    optional int32 exchange_direction = 2[default = 0];//换三张方向
+    optional int32 exchange_end_time = 3[default = 0];//换三张结束时间
+}
+
+message REQ_HUANSANZHANG{
+    repeated int32 tile_list = 1;   //三张牌
+}
+
+message RSP_HUANSANZHANG{
+    optional int32 result = 1[default = 0];
+}
+
+message NTF_HUANSANZHANG_TILES{
+    repeated int32 tile_list = 1;   //换来的三张牌
+    optional int32 cardtoon_end_time = 2[default = 0];//换三张动画结束时间
+}
+
+message NTF_DINGQUE_START{
+    optional int32 dingque_end_time = 1[default = 0];//定缺结束时间
+}
+
+message REQ_DINGQUE{
+    optional uint32 flower = 1[default = 0]; //花色 1--万 2--筒 3--索
+}
+
+message RSP_DINGQUE{
+    optional int32 result = 1[default = 0];
+}
+
+message PlayerDingQue{
+    optional fixed32 uid = 1[default = 0];
+    optional uint32 flower = 2[default = 0]; //花色 1--万 2--筒 3--索
+}
+
+message NTF_DINGQUE{
+    repeated PlayerDingQue player_dingque_list = 1;   //玩家定缺列表
+}
+
+message ScoreDetail{
+    optional uint32 op_type = 1[default = 0];    //操作类型
+    optional int32 score = 2[default = 0];       //增加多少分
+    optional uint32 hu_type = 3[default = 0];    //胡牌类型
+    repeated fixed32 uid_list = 4;              //此操作作用的玩家列表
+    optional AddtionTpye addtion = 5;           //加成类型
+    optional bool fengding = 6[default = false];//封顶
+    optional uint32 fan = 7[default = 0];  //番数}
+}
+
+//牌局玩家输赢结果
+message PlayerRecord{
+    optional fixed32 uid = 1;
+    optional int32 add_score = 2[default = 0]; //总共输赢多少分  
+    repeated ScoreDetail add_score_detail = 4;//玩家牌局记录
+    optional int32 add_fan = 5[default = 0]; //番数 
+}
+
+message LeftCard{
+    optional fixed32 uid = 1[default = 0];
+    repeated uint32 cards = 2;
+}
+
+//通知游戏结束
+message NTF_GAMEOVER{
+    repeated PlayerRecord player_record_list = 1;//玩家牌局记录
+    repeated LeftCard player_left_card_list = 2;   //剩余的手牌
+    optional bool liuju = 3[default = false];       //是否流局
+}
+
+message REQ_CHAT{
+    optional int32 content_id = 1[default = 0]; //内容id,根据区间来区分是表情还是文本
+    optional string str_content = 2[default = '']; //自定义聊天
+}
+
+message RSP_CHAT{
+    optional int32 result = 1[default = 0];//0表示发言成功
+    optional int32 content_id = 2[default = 0];
+    optional string str_content = 3[default = ''];
+}
+
+message NTF_CHAT{
+    optional fixed32 uid = 1[default = 0];
+    optional int32 content_id = 2[default = 0]; //内容id,根据区间来区分是表情还是文本
+    optional string str_content = 3[default = ''];
+}
+
+message REQ_VOICE_CHAT{
+    optional string voice_id = 1[default = ''];
+}
+
+message RSP_VOICE_CHAT{
+    optional int32 result = 1[default = 0];//0表示发言成功
+    optional string voice_id = 2[default = ''];
+}
+
+message NTF_VOICE_CHAT{
+    optional fixed32 uid = 1[default = 0];
+    optional string voice_id = 2[default = '']; 
+}
+
+message REQ_PLAYER_INFO{
+    optional fixed32 uid = 1[default = 0];
+}
+
+message RSP_PLAYER_INFO{
+    optional int32 result = 1[default = 0];
+    optional string name = 2[default = ''];
+    optional uint32 sex = 3[default = 1];   //1:男   2:女
+    optional string icon = 4[default = ''];
+    optional int32 level = 5[default = 0];
+    optional int32 coins = 6[default = 0];
+    optional int32 total_count = 7[default = 0];
+    optional int32 win_percent = 8[default = 0];
+    optional fixed32 uid = 9[default = 0];
+    optional string player_ip = 10[default = '']; 
+}
+
+//解散协议
+message REQ_DISMISS_TOUPIAO{
+
+}
+
+message RSP_DISMISS_TOUPIAO{
+    optional int32 result = 1[default = 0]; 
+}
+
+message NTF_TOUPIAO_PANEL{
+    optional fixed32 uid = 1[default = 0];   //投票发起人
+    optional fixed32 end_time = 2[default = 0];   //投票结束时间
+}
+
+message REQ_TOUPIAO{
+    optional uint32 is_agree = 1[default = 1];  //1:同意  2：不同意
+}
+
+message RSP_TOUPIAO{
+    optional int32 result = 1[default = 0];
+    optional uint32 is_agree = 2[default = 1];  //1:同意  2：不同意
+}
+
+message NTF_TOUPIAO{
+    optional fixed32 uid = 1[default = 0];
+    optional uint32 is_agree = 2[default = 1];  //1:同意  2:不同意
+}
+
+message NTF_FTABLE_DISS{
+    optional int32 result = 1[default = 0]; //0解散成功 大于0 解散不成功
+    optional int32 reason = 2[default = 0]; //解散原因 1房主解散 2投票解散 3局数打完 4超时解散 5关服解散
+}
+
+//托管
+message REQ_TRUSTEE{
+    optional int32 trust = 1[default = 0]; //1托管 0取消托管
+}
+
+message RSP_TRUSTEE{
+    optional int32 state = 1[default = 0];//1托管 0未托管
+    optional int32 result = 2[default = 0];
+}
+
+message MoneyUpdate{
+    optional fixed32 uid = 1;
+    optional int32 update_score = 2[default = 0]; //输赢多少分  
+    repeated ScoreDetail score_detail = 3;//详细记录   
+}
+
+message NTF_UPDATE_MONEY{
+    repeated MoneyUpdate money_update = 1;//金钱更新玩家列表
+}
+
+message RankInfo{
+    optional fixed32 uid = 1[default = 0];
+    optional int32 round_times = 4[default = 0];    //对局数
+    optional int32 win_times = 5[default = 0];      //胜局
+    optional uint32 rank = 6[default = 0];      //排名
+    optional int32 score = 7[default = 0];      //累计积分
+}
+
+message PlayRoundInfo{
+    optional fixed32 uid = 1[default = 0];
+    optional int32 add_score = 4[default = 0];  //获得分数
+}
+
+message RoundInfo{
+    optional int32 round = 1[default = 0];
+    repeated PlayRoundInfo player_list = 2;
+}
+
+message REQ_ROUND_INFO{
+
+}
+
+message RSP_ROUND_INFO{
+    optional int32 result = 1[default = 0];
+    repeated RankInfo rank_list = 2;        //对局排行
+    repeated RoundInfo round_list = 3;      //对局流水
+}
+
+message NTF_ROUND_OVER{
+    repeated RankInfo rank_list = 1;        //对局排行
+    repeated RoundInfo round_list = 2;      //对局流水
+}
+
+message TotalRecord{
+    optional fixed32 uid = 1[default = 0];
+    optional int32 total_score = 2[default = 0];       //总分
+    optional uint32 zimo_count = 3[default = 0];        //自摸次数
+    optional uint32 jiepao_count = 4[default = 0];      //接炮次数
+    optional uint32 dianpao_count = 5[default = 0];     //点炮次数
+    optional uint32 angang_count = 6[default = 0];      //暗杠次数
+    optional uint32 gang_count = 7[default = 0];        //明杠次数
+    optional uint32 dajiao_count = 8[default = 0];      //查大叫次数
+}
+
+//房间大结算
+message NTF_TOTAL_RECORD{
+    repeated TotalRecord total_record_list = 1;        //总结算
+}
+
+message REQ_TEST_DRAW{
+    optional uint32 tile = 1[default = 0]; 
+}
+
+message RSP_TEST_DRAW{
+    optional int32 result = 1[default = 0];
+}
+
+message NTF_YIPAODUOXIANG{
+    optional fixed32 dianpao_uid = 1[default = 0]; //点炮玩家id
+}
+
+message REQ_INTERACT{
+    optional fixed32 uid = 1[default = 0]; //互动玩家id
+    optional int32 context_id = 2[default = 0]; //互动玩家id
+}
+
+message RSP_INTERACT{
+    optional int32 result = 1[default = 0];
+    optional fixed32 recv_uid = 2[default = 0]; //接收方
+    optional int32 context_id = 3[default = 0]; //
+}
+
+message NTF_INTERACT{
+    optional fixed32 send_uid = 1[default = 0]; //发送方
+    optional fixed32 recv_uid = 2[default = 0]; //接收方
+    optional int32 context_id = 3[default = 0]; //互动表情id
+}

@@ -1,0 +1,51 @@
+server_name = 'tablesvr2' 
+server_id = 2
+
+frame_root = './frame/'
+root = frame_root .. "tablesvr/"
+skynet_root = "deps/skynet/"
+thread = 2
+harbor = 0
+start = "main"	-- main script
+bootstrap = "snlua bootstrap"	-- The service for bootstrap
+luaservice = 
+        root.."services/?.lua;" .. 
+        frame_root .."services/?.lua;" .. 
+        skynet_root.."service/?.lua;"..
+        skynet_root.."test/?.lua;"
+
+lualoader = skynet_root .. "lualib/loader.lua"
+
+lua_path = 
+        root .. 'strategy/?.lua;' ..
+        root.."games/?.lua;" ..
+        root.."games/?/?.lua;" .. 
+        root.."games/majiang/?.lua;" .. 
+        root.."modules/?.lua;" ..
+        frame_root .. 'common/?.lua;' ..
+        frame_root .. 'proto/lualib/?.lua;' ..
+        frame_root .. 'lualib/?.lua;' ..
+        skynet_root.."lualib/?.lua;" ..
+        skynet_root.."lualib/?/init.lua;" ..
+        skynet_root .. 'proto/lualib/?.lua' 
+
+lua_cpath = frame_root .. 'luaclib/?.so;' .. skynet_root .. "luaclib/?.so"
+cpath = skynet_root.."cservice/?.so"
+max_client = 1000
+
+pbroot = frame_root .. 'proto/built'
+
+router_path = frame_root .. 'router_conf/router.lua'
+
+data_worker_num = 8
+
+listen_port = 8582
+all_proxy_address='127.0.0.1:8556'
+preload='frame/lualib/preload.lua'
+configs=frame_root .. 'configs'
+
+daemon = "/data/skynet-run/" .. server_name .. ".pid"
+logpath = "/data/skynet-rlog/"
+logger = "logger"
+logservice = "snlua"
+DEBUG = true

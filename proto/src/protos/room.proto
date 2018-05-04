@@ -1,0 +1,120 @@
+package room;
+
+import "ddz.proto";
+import "majiang.proto";
+
+//请求进场，跟进桌的意义不一样
+message REQ_ENTER{
+    optional uint32 table_type = 1[default = 0]; 
+}
+
+message RSP_ENTER{
+    optional int32 result = 1[default = 0];
+    optional fixed32 dest = 2[default = 0];  //桌子服目标地址
+    optional fixed64 table_gid = 3[default = 0]; //桌子服的gid
+}
+
+//输入好友房房号
+message REQ_FRIEND_TABLE_INFO{
+   optional uint32 password = 1[default = 0]; //好友房房号
+}
+
+//密码检查回应
+message RSP_FRIEND_TABLE_INFO{
+   optional int32 result = 1[default = 0]; //错误码
+   optional fixed32 dest = 2[default = 0];  //桌子服 目标地址
+   optional fixed64 table_gid = 3[default = 0]; //桌子服的gid
+}
+
+message OneRecordResult{
+    optional fixed32 uid = 1[default = 0];
+    optional string name = 2[default = ''];
+    optional string icon = 3[default = ''];
+    optional uint32 count = 4[default = 0];
+    optional uint32 win_times = 5[default = 0];
+    optional int32 addscore = 6[default = 0];
+}
+
+message RoundResult{
+    optional fixed32 uid = 1[default = 0];
+    optional int32 addscore = 2[default = 0];
+}
+
+message OneRoundInfo{
+    optional uint32 round = 1[default = 0]; // 第几局
+    repeated RoundResult result_list = 2;
+}
+
+message FriendRecord{
+   optional fixed32 time = 1[default = 0];  //对战时间
+   optional uint32 table_type = 2[default = 0];  //房间类型
+   optional uint32 password = 3[default = 0];   //房间号 
+   repeated OneRecordResult total_list = 4; //玩家输赢总信息
+   repeated OneRoundInfo detail_list = 5;    //每一局的详细信息
+}
+
+//请求好友房战绩
+message REQ_FRECORD_LIST{
+    optional uint32 game_type = 1[default = 0]; //游戏类型  1:斗地主 2：血战
+}
+
+//好友房战绩返回
+message RSP_FRECORD_LIST{
+    repeated FriendRecord frecord_list = 1;
+    optional int32 result = 2[default = 0];
+    optional uint32 game_type = 3[default = 0];//游戏类型  1:斗地主 2：血战
+}
+
+//请求获取好友房列表
+message REQ_FRIEND_TABLE_PANEL{
+    optional uint32 game_type = 1[default = 0];//1:斗地主  2:血战
+}
+
+message FriendTableRow{
+    optional uint32 password = 1[default = 0]; //房号
+    optional int32 table_type = 2[default = 0];
+    repeated string icons = 3;  //头像列表
+    optional uint32 player_num = 4[default = 0];
+    optional uint32 zimo_addition = 5[default = 0]; //自摸不加倍--0 自摸加底--1 自摸加番--2
+    optional uint32 total_count = 6[default = 0]; //总局数
+}
+
+message RSP_FRIEND_TABLE_PANEL{
+    optional int32 result = 1[default = 0];
+    repeated FriendTableRow friend_tables = 2;
+    optional int32 today_score = 3[default = 0];
+    optional uint32 game_type = 4[default = 0];//1:斗地主  2:血战
+}
+
+message PlayerScore{
+   optional fixed32 uid = 1[default = 0];
+   optional int32 score = 2[default = 0];
+}
+
+message FriendTable{
+   optional fixed32 create_uid = 1[default = 0];
+   optional fixed32 password = 2[default = 0];
+   optional uint32 table_type = 3[default = 0];  //房间类型
+   optional uint32 cur_count = 4[default = 0];   //当前次数
+   optional uint32 total_count = 5[default = 0];   //当前次数
+   repeated PlayerScore player_score_list = 6;     //玩家积分列表
+}
+
+//创建好友房
+message REQ_CREATE_FRIEND_TABLE{
+   optional uint32 table_type = 1[default = 0];      //桌子类型
+   optional ddz.CreateTableConf ddz_create_conf = 2; //斗地主创房间配置
+   optional majiang.CreateConf xuezhan_create_conf = 3; //血战到底创房间配置
+}
+
+//创建好友房反馈
+message RSP_CREATE_FRIEND_TABLE{
+   optional int32 result = 1[default = 0]; //0成功 大于0 是错误码
+   optional fixed32 dest = 3[default = 0];  //桌子服 目标地址
+   optional fixed64 table_gid = 4[default = 0]; //桌子服的gid
+   optional uint32 password = 5[default = 0]; //房号
+}
+
+message NTF_FRIEND_TABLE_UPDATE{
+   optional FriendTable update_table = 1;
+}

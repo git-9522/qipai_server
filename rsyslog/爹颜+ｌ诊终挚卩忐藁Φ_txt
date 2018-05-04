@@ -1,0 +1,66 @@
+日志服務器logmaster：
+$Modload imudp
+$UDPServerRun 514
+取消上面兩行的注释，监听默认的514端口
+
+日志客户端配置logclient:
+在/etc/rsyslog.conf后面加如下代码
+*.* @logmaster
+表示转发日志到logmaster地址，logmaster为日志服务器IP,默认端口为514
+*.*表示需要转发的日志类型如：local6.notice @127.0.0.1
+
+测试配置文件是否正确：rsyslogd -N1 -f file
+
+template模板:
+使用模板将日志存在指定位置
+模板由template（）语句指定。 也可以通过$ template legacy语句指定它们
+template(name="FileFormat" type="list") {
+    property(name="timestamp" dateFormat="rfc3339")
+    constant(value=" ")
+    property(name="hostname")
+    constant(value=" ")
+    property(name="syslogtag")
+    property(name="msg" spifno1stsp="on" )
+    property(name="msg" droplastlf="on" )
+    constant(value="\n")
+    }
+等价于
+template(name="FileFormat" type="string"
+         string= "%TIMESTAMP% %HOSTNAME% %syslogtag%%msg:::sp-if-no-1st-sp%%msg:::drop-last-lf%\n"
+        )
+模板具体相关的可以参考官方文档中的例子
+定义好模板后就可以绑定action
+action(type="omfile" file="/var/log/all-msgs.log");FileFormat
+
+队列：
+main queue  : 为了解决在进入数据量突然增加时，后端的filter Engine 不能及时处理就造成瓶颈。
+action queue: 为了解决后端output无法发送数据时(如：对端挂掉，网络卡发送不及时)，将数据缓存起来，以免日志丢失。
+
+$WorkDirectory /data2/logs/ #定义工作目录。例如队列文件存储存储文件夹。
+$MainMsgQueueType LinkedList #选择使用内存队列模式。
+$MainMsgQueueFileName local5.main #如果队列模式使用内存模式，同时在配置这个参数，意味激活磁盘附加队列。
+$MainMsgQueueHighWatermark 10000 #当内存队列达到这些元素时，开始回写磁盘。
+$MainMsgQueueLowWatermark 1000 #当内存队列小于这些元素时，停止回写磁盘。
+$MainMsgQueueMaxDiskSpace 20g #限制磁盘队列大小，参数疑似20GByte。
+$MainMsgQueueMaxFileSize 200m #队列单文件尺寸大小。
+$MainMsgQueueSaveOnShutdown on #在rsyslogd关闭时，要保存队列中数据。
+$MainMsgQueueDiscardSeverity 8 #丢弃消息等级设定，数字越低丟的越多，设置8代表禁止丢弃消息。
+$MainMsgQueueDiscardMark 1000000000 #超出10亿后，会禁止新消息入队，丢弃消息。如果前一个被禁止， #那么丢弃数据将无针对性,如果
+$MainMsgQueueTimeoutEnqueue 3000 #超时3秒，TCP或local_socket方式下，预防资源夯住，引起崩溃。
+$MainMsgQueueDequeueBatchSize 500 #优化带宽，设置每批次传输元素量，尽可能每次传输更多的数据。
+#发送队列(可以部署多个)
+$ActionForwardDefaultTemplate RSYSLOG_ForwardFormat #定义转发消息格式模板，使用系统默认转发格式。
+$WorkDirectory /data2/logs/ #定义工作目录。例如队列文件存储存储文件夹。
+$ActionQueueType LinkedList #选择使用内存队列模式。
+$ActionQueueFileName local5.forward #如果队列模式使用内存模式，同时在配置这个参数，意味激活磁盘附加队列。
+$ActionQueueHighWatermark 10000 #当内存队列达到这些元素时，开始回写磁盘。
+$ActionQueueLowWatermark 1000 #当内存队列小于这些元素时，停止回写磁盘。
+$ActionQueueMaxDiskSpace 20g #限制磁盘队列大小，参数疑似20GByte。
+$ActionQueueMaxFileSize 200m #队列单文件尺寸大小。
+$ActionResumeRetryCount -1 #失败后重试次数，-1 代表无限。
+$ActionQueueSaveOnShutdown on #在rsyslogd关闭时，要保存队列中数据。
+$ActionQueueDiscardSeverity 8 #丢弃消息等级设定，数字越低丟的越多，设置8代表禁止丢弃消息。
+$ActionQueueDiscardMark 1000000000 #超出10亿后，会禁止新消息入队，丢弃消息。如果前一个被禁止，
+ #那么丢弃数据将无针对性,如果
+$ActionQueueTimeoutEnqueue 3000 #超时3秒，TCP或local_socket方式下，预防资源夯住，引起崩溃。
+$ActionQueueDequeueBatchSize 500 #优化带宽，设置每批次传输元素量，尽可能每次传输更多的数据。

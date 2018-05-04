@@ -1,0 +1,33 @@
+server_name = 'gateway' 
+server_id = 1
+
+frame_root = './frame/'
+root = frame_root .. "gateway/"
+skynet_root = "deps/skynet/"
+thread = 2
+harbor = 0
+start = "main"	-- main script
+bootstrap = "snlua bootstrap"	-- The service for bootstrap
+luaservice = frame_root .."services/?.lua;" .. root.."services/?.lua;" .. skynet_root.."service/?.lua;"..skynet_root.."test/?.lua;"
+lualoader = skynet_root .. "lualib/loader.lua"
+lua_path = frame_root .. 'common/?.lua;' 
+.. frame_root .. 'lualib/?.lua;' 
+.. skynet_root.."lualib/?.lua;"
+.. skynet_root.."lualib/?/init.lua;"
+.. skynet_root.."lualib/compat10/?.lua;"
+
+lua_cpath = frame_root .. 'luaclib/?.so;' .. skynet_root .. "luaclib/?.so"
+cpath = skynet_root.."cservice/?.so"
+max_client = 1000
+
+listen_port = 8555
+all_proxy_address='127.0.0.1:8556'
+preload='frame/lualib/preload.lua'
+
+router_path = frame_root .. 'router_conf/router.lua'
+debug = 1
+
+daemon = "/data/skynet-run/" .. server_name .. server_id .. ".pid"
+logpath = "/data/skynet-rlog/"
+logger = "logger"
+logservice = "snlua"

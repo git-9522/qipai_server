@@ -1,0 +1,48 @@
+server_name='dbsvr'
+server_id=1
+
+frame_root = './frame/'
+root = frame_root .. "dbsvr/"
+skynet_root = "deps/skynet/"
+thread = 2
+harbor = 0
+start = "main"	-- main script
+bootstrap = "snlua bootstrap"	-- The service for bootstrap
+luaservice = frame_root .."services/?.lua;" .. root.."services/?.lua;" .. frame_root .."test/?.lua;" .. skynet_root.."service/?.lua;"..skynet_root.."test/?.lua;"
+lualoader = skynet_root .. "lualib/loader.lua"
+
+lua_path = frame_root .. 'common/?.lua;' .. 
+            frame_root .. 'lualib/?.lua;' .. 
+            skynet_root.."lualib/?.lua;"..
+            skynet_root.."lualib/?/init.lua;".. 
+            skynet_root..'proto/lualib/?.lua;'..
+            skynet_root.."lualib/compat10/?.lua;"
+
+lua_cpath = frame_root .. 'luaclib/?.so;' .. skynet_root .. "luaclib/?.so"
+cpath = skynet_root.."cservice/?.so"
+
+listen_port = 8582
+all_proxy_address='127.0.0.1:8556'
+preload='frame/lualib/preload.lua'
+
+redis_host="127.0.0.1"
+redis_port=6379
+redis_db=1
+dirty_queue_db=7
+dirty_queue_key='writable_uid_queue'
+
+db_host="127.0.0.1"
+db_port=29991
+db_name='ddz'
+db_coll_name='users'
+
+data_worker_num=8
+
+router_path = frame_root .. 'router_conf/router.lua'
+
+debug_console_port=19382
+
+--daemon = "/data/skynet-run/" .. server_name .. server_id .. ".pid"
+logpath = "/data/skynet-rlog/"
+logger = "logger"
+logservice = "snlua"

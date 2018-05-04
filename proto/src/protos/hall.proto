@@ -1,0 +1,191 @@
+package hall;
+
+//心跳请求
+message PING{
+}
+
+//心跳回复
+message PONG{
+   optional fixed32 server_time = 1[default = 0]; 
+}
+
+//游戏匹配
+message REQ_MATCH_PLAYER{
+   optional uint32 table_type = 1[default = 0];
+   optional uint32 status = 2[default = 1]; //1:不明牌    2：明牌  
+}
+
+//游戏匹配反馈
+message RSP_MATCH_PLAYER{
+   optional int32 result = 1[default = 0]; //0成功 大于0 是错误码
+   optional uint32 interval = 2[default = 0]; //匹配等待时间
+}
+
+//匹配成功
+message NTF_MATCH_SUCESS{
+    optional fixed32 dest = 1[default = 0];  //桌子服 目标地址
+    optional fixed64 table_gid = 2[default = 0]; //桌子服的gid
+}
+
+//取消匹配
+message REQ_CANCEL_MATCH_PLAYER{
+
+}
+
+//取消匹配回应
+message RSP_CANCEL_MATCH_PLAYER{
+  optional int32 result = 1[default = 0]; //0成功 大于0 是错误码
+}
+
+message REQ_BUY{
+	optional int32 goods_id = 1[default = 0];	//商品id
+}
+
+message RSP_BUY{
+	optional int32 result = 1[default = 0];
+	optional int32 goods_id = 2[default = 0];	//商品id
+    optional int32 item_id = 3[default = 0];
+    optional int32 item_count = 4[default = 0];
+}
+
+//走马灯
+message NTF_CIRCLE_NOTIFICATION{
+    optional string message = 1[default = ''];
+    optional int32 interval = 2[default = 0];//seconds
+    optional int32 end_time = 3[default = 0];
+}
+
+//金币变化
+message NTF_USER_MONEY{
+    optional int32 coins = 1[default = 0];
+    optional int32 gems = 2[default = 0];
+    optional int32 roomcards = 3[default = 0];
+
+    optional uint32 flags = 10[default = 0];    //这是一个位flags,第0个位表示coins发生变化，1:gems,2:roomcards
+}
+
+message OneItem{
+    optional int32 id = 1[default = 0];
+    optional int32 count = 2[default = 0];
+}
+
+//请求背包物品
+message REQ_ITEM_LIST{
+    
+}
+
+message RSP_ITEM_LIST{
+    repeated OneItem item_list = 1;
+    optional int32 result = 2[default = 0];
+}
+
+//请求个人桌子
+message REQ_SELF_TABLE{
+   
+}
+
+//个人桌子回应
+message RSP_SELF_TABLE{
+  optional int32 result = 1[default = 0]; //错误码
+  optional fixed32 dest = 2[default = 0];  //桌子服 目标地址
+  optional fixed64 table_gid = 3[default = 0];  //桌子号
+}
+
+//请求GM命令
+message REQ_GM{
+    optional string cmd = 1[default = ''];
+}
+
+message RSP_GM{
+    optional int32 result = 1[default = 0];
+}
+
+//今天补偿金
+message NTF_COMPENSATION{
+    optional uint32 compensation_times = 1[default = 0];//补偿次数
+    optional uint32 compensation_coins = 2[default = 0];//补偿金币
+}
+
+//查看个人信息
+message REQ_PERSONAL_INFO{
+
+}
+
+message RSP_PERSONAL_INFO{
+    optional fixed32 uid = 1[default = 0]; 
+    optional string name = 2[default = ''];
+    optional uint32 sex = 3[default = 1];   //1:男,2：女
+    optional string icon = 4[default =''];
+    optional uint32 level = 5[default = 0];
+    optional uint32 coins = 6[default = 0];
+    optional uint32 gems = 7[default = 0];
+    optional int32 total_count = 8[default = 0];
+    optional int32 win_percent = 9[default = 0];
+    optional int32 result = 10[default = 0];
+}
+
+//修改姓名
+message REQ_CHANGE_NAME{
+    optional string name = 1[default = ''];
+}
+
+message RSP_CHANGE_NAME{
+    optional int32 result = 1[default = 0];
+    optional string name = 2[default = ''];
+    optional bool can_change_name = 3[default = false];
+}
+
+//修改性别
+message REQ_CHANGE_SEX{
+    optional uint32 sex = 1[default = 1];   //1:男,2：女
+}
+
+message RSP_CHANGE_SEX{
+    optional int32 result = 1[default = 0];
+    optional uint32 sex = 2[default = 1];
+    optional string icon = 3[default =''];  //当前的头像
+}
+
+message RoomData{
+    optional uint32 room_type  = 1[default = 1];     //场次类型
+    optional string room_name  = 2[default = ''];    //场次名字
+    optional int32  base_score = 3[default = 1];     //底分
+    optional int32  base_rate  = 4[default = 1];     //底倍数
+    optional int32  min_limit  = 5[default = 1];     //入场最小分数
+    optional int32  max_limit  = 6[default = 1];     //入场最大分数
+    optional int32  cost       = 7[default = 1];     //入场消耗
+    optional int32  top_limit  = 8[default = 1];     //封顶
+    optional int32  play_num   = 9[default = 1];     //在玩人数
+}
+
+message REQ_ROOMDATA_LIST{
+
+}
+
+message RSP_ROOMDATA_LIST{
+    repeated RoomData room_data_list = 1;
+}
+
+message PriceInfo{
+    optional int32 currency = 1[default = 0];
+    optional int32 amount = 2[default = 0];
+}
+
+message ShopItem{
+    optional int32 shop_id = 1[default = 0];
+    optional string name = 2[default = ''];
+    optional PriceInfo price = 3;
+    optional OneItem goods = 4;
+    optional int32 givenum = 5;
+    optional float givepro = 6[default = 0.0];
+    optional int32 index = 7[default = 0];
+    optional string icon_name = 8[default = ''];
+}
+
+message REQ_SHOP_INFO{
+
+}
+
+message RSP_SHOP_INFO{
+    repeated ShopItem shop_item_list = 1;
+}

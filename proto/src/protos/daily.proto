@@ -1,0 +1,84 @@
+package daily;
+
+message AwardInfo{
+    optional int32 id = 1[default = 0];
+    optional int32 count = 2[default = 0];
+}
+
+message REQ_SIGNIN{
+}
+
+message RSP_SIGNIN{
+    optional int32 result = 1[default = 0];
+    optional int32 sign_count = 2[default = 0];
+    repeated AwardInfo award_list = 3;
+}
+
+message REQ_SIGNIN_PANEL{
+
+}
+
+message DayAwardInfo{
+    optional int32 day = 1[default = 0];
+    repeated AwardInfo award_list = 2;
+}
+
+
+message RSP_SIGNIN_PANEL{
+    optional int32 result = 1[default = 0];
+    optional int32 today_sign = 2[default = 0];     //今日是否签到
+    optional int32 sign_count = 3[default = 0];     //连续签到次数
+    optional int32 take_special_award = 4[default = 0];     //0.未领取 1.已领取
+    repeated DayAwardInfo day_award_list = 5;          //连续签到奖励列表
+}
+
+message REQ_CURR_TASK{
+
+}
+
+message TaskInfo{
+    optional int32 task_id = 1[default = 0];
+    optional string task_name = 2[default = ''];
+    optional int32 process = 3[default = 0];
+    optional int32 process_limit = 4[default = 0];
+    repeated AwardInfo award_list = 5;
+    optional string guidance = 6[default = ''];
+}
+
+message CycleInfo{
+    optional uint32 cycle_type = 1[default = 1]; //周期类型：1.日常2.周常
+    repeated TaskInfo task_list = 2;
+}
+
+message RSP_CURR_TASK{
+    optional int32 result = 1[default = 0];
+    repeated CycleInfo cycle_list = 2;
+}
+
+message NTF_CURR_TASK{
+    repeated CycleInfo cycle_list = 1;
+}
+
+message REQ_TAKE_TASK_AWARD{
+    optional int32 task_id = 1[default = 0];
+}
+
+message RSP_TAKE_TASK_AWARD{
+    optional int32 result = 1[default = 0];
+    repeated AwardInfo award_list = 2;
+    optional int32 task_id = 3;
+}
+
+message NTF_TASK_CHANGE{
+    optional int32 task_id = 1[default = 0];
+    optional int32 process = 2[default = 0];
+}
+
+message REQ_SPECIAL_SIGNAWARD{
+
+}
+
+message RSP_SPECIAL_SIGNAWARD{
+    optional int32 result = 1[default = 0];
+    repeated AwardInfo award_list = 2;
+}

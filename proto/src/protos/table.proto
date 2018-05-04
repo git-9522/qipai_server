@@ -1,0 +1,30 @@
+package table;
+
+import "ddz.proto";
+import "majiang.proto";
+
+//进房
+message REQ_ENTER{
+    optional fixed64 table_gid = 1[default = 0];
+}
+
+message RSP_ENTER{
+    optional int32 result = 1[default = 0];
+    optional uint32 game_type = 2[default = 0]; //1--斗地主 2--麻将
+    optional uint32 table_type = 3[default = 0];
+    optional ddz.EnterInfo ddz_enter_info = 4;
+    optional majiang.EnterInfo majiang_enter_info = 5;
+}
+
+message REQ_CONFIG_CARDS{
+    optional uint32 game_type = 1[default = 0]; //1:斗地主 2：血战
+    optional string self_cards = 2[default = ''];        //example:"103,104,105,106,107"
+    optional string cards1 = 3[default = ''];
+    optional string cards2 = 4[default = ''];
+    optional string cards3 = 5[default = ''];
+    optional uint32 laizi_id = 6[default = 0];
+}
+
+message RSP_CONFIG_CARDS{
+    optional int32 result = 1[default = 0];
+}
