@@ -6,11 +6,13 @@ local reason = require "reason"
 local sync_run = require "sync_runner"
 local table_def = require "table_def"
 
-local table_sort = table.sort
+local table_sort   = table.sort
 local table_insert = table.insert
 local table_remove = table.remove
 local table_unpack = table.unpack
-local math_random = math.random
+local math_random  = math.random
+local math_floor   = math.floor
+
 local string_format = string.format
 
 local TABLE_LIMIT = tonumber(skynet.getenv "table_limit") or 1000
@@ -18,7 +20,7 @@ local DEBUG = skynet.getenv "DEBUG" or false
 
 local locked_uids = {}
 local server_start_time = 0
-local asyn_data_time = 0
+local asyn_data_time    = 0
 local ftable_start_list = {}	--已经开始的房间列表
 local CMD = {}
 
@@ -37,6 +39,14 @@ local expiry_checking_list
 
 local candidate_password_list = {}
 local being_used_password_list = {}
+
+local function copy_table(t)
+	local new_t = {}
+	for k,v in pairs(t) do
+		new_t[k] = v
+	end
+	return new_t
+end
 
 local function gen_table_password_list()
 	candidate_password_list = {}
@@ -123,49 +133,12 @@ local function create_table_on_tablesvr(tablesvr_id,uid,table_info,password)
 	return ret
 end
 
---[[
-	ddz_table_conf = {
-		table_type = msg.table_type,
-        set_dizhu_way = msg.set_dizhu_way,
-        max_dizhu_rate = msg.max_dizhu_rate,
-        count = msg.count,
-        can_watch = msg.can_watch,
-        cost = cost,
-	}
-]]
-
 local function make_table_info(uid,created_time,password,table_conf)
-	local table_info = {
-		creator_uid = uid,
-		created_time = created_time,
-		password = password,
-		curr_round = 0,
-		table_type = table_conf.table_type,
-		cost = table_conf.cost,
-	}
-
-	if table_def.ddz_ftable_map[table_conf.table_type] then
-		table_info.set_dizhu_way = table_conf.set_dizhu_way
-		table_info.max_dizhu_rate = table_conf.max_dizhu_rate
-		table_info.count = table_conf.count
-		table_info.can_watch = table_conf.can_watch
-	end
-
-	if table_def.xuezhan_ftable_map[table_conf.table_type] then
-		table_info.total_count = table_conf.total_count
-        table_info.limit_rate  = table_conf.limit_rate
-		table_info.zimo_addition = table_conf.zimo_addition
-        table_info.dianganghua   = table_conf.dianganghua
-        table_info.exchange_three = table_conf.exchange_three
-        table_info.hujiaozhuanyi = table_conf.hujiaozhuanyi
-        table_info.daiyaojiu = table_conf.daiyaojiu
-        table_info.duanyaojiu = table_conf.duanyaojiu
-        table_info.jiangdui = table_conf.jiangdui
-        table_info.mengqing = table_conf.mengqing
-        table_info.tiandi_hu = table_conf.tiandi_hu
-        table_info.haidilaoyue = table_conf.haidilaoyue
-        table_info.base_score = table_conf.base_score
-	end
+	local table_info = copy_table(table_conf)
+	table_info.creator_uid  = uid
+	table_info.created_time = created_time
+	table_info.password     = password
+	table_info.curr_round   = 0
 
 	return table_info
 end
@@ -216,7 +189,7 @@ local function create_ftable(uid,table_conf)
 		return -10
 	end
 
-	local game_type = assert(table_def.table_game_map[table_conf.table_type],"this room in not exits in def")
+	local game_type = math_floor(table_conf.table_type/10000)
 	print("game_type",game_type)
 	--检查下玩家的房间是否超上限
 	local ok,ret = R().exdbsvr(1):call(fuser_handler,'get_user_ftable_info',uid,game_type)
@@ -268,7 +241,7 @@ end
 
 -----------------------------创建好友房------------------------------
 function CMD.create_friend_table(uid,table_conf)
-	dbglog('ffffffffffffffffffff',uid,tostring_r(table_conf))
+	dbglog('create_friend_table111111',uid,tostring_r(table_conf))
 	if locked_uids[uid] then
 		errlog(uid,'this guy is creating the friend table now')
 		return -999
@@ -477,15 +450,14 @@ local function _dismiss_friend_table(password)
 	end
 
 	local creator_uid = table_info.creator_uid
-	local game_type = assert(table_def.table_game_map[table_info.table_type])
+	local game_type   = math_floor(table_info.table_type/10000)
 
     R().exdbsvr(1):send('.fuser_handler','del_self_ftable',creator_uid,password,game_type)
 
 	if table_info.record_key then
 		local record_key = table_info.record_key
 		--如果有过该记录
-		local uid_list = assert(table_info.uid_list)
-		local game_type = assert(table_def.table_game_map[table_info.table_type])
+		local uid_list  = assert(table_info.uid_list)
 		for _,uid in ipairs(uid_list) do
 			R().exdbsvr(1):send('.msg_handler','save_frecord',uid,record_key,game_type)
 		end

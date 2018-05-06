@@ -330,45 +330,19 @@ function hall_handler.REQ_CHANGE_SEX(msg)
 end
 
 local function check_ddz_ftable_conf(table_type,create_conf,count)
-    print_r(create_conf)
-
-    if not table_def.set_dizhu_way[create_conf.set_dizhu_way] then
-        print("1111111111")
-        return false
-    elseif not table_def.max_dizhu_rate[create_conf.max_dizhu_rate] then
-        print("22222222222222")
-        return false
-    elseif not table_def.count_select[create_conf.count] then
-        print("23333333333333333333")
-        return false
-    elseif not table_def.friend_table_type_map[table_type] then
-        print("244444444444444")
-        return false
-    end
-
-    count = create_conf.count
-
+    --检查斗地主好友房参数
     return true
 end
 
 local function check_xuezhan_ftable_conf(create_conf,count)
-    count = create_conf.total_count
-
-    if not table_def.xuezhan_count_map[create_conf.total_count] then
-        return false
-    elseif not table_def.xuezhan_limit_rate_map[create_conf.limit_rate] then
-        return false
-    elseif not table_def.xuezhan_zimo_map[create_conf.zimo_addition] then
-        return false
-    elseif not table_def.dianganghua_map[create_conf.dianganghua] then
-        return false
-    end
-
+    --检查好友房参数
     return true
 end
 
 local function make_ftable_create_data(table_type,cost,ddz_create_conf,xuezhan_create_conf)
-    if table_def.ddz_ftable_map[table_type] then
+    local game_type = math_floor(table_type/100)
+
+    if game_type == table_def.GAME_TYPE_DDZ then
         local create_data = {
             table_type = table_type,
             cost = cost,
@@ -378,7 +352,7 @@ local function make_ftable_create_data(table_type,cost,ddz_create_conf,xuezhan_c
             can_watch = ddz_create_conf.can_watch,
         }
         return create_data
-    elseif table_def.xuezhan_ftable_map[table_type] then
+    elseif game_type == table_def.GAME_TYPE_XUEZHAN then
         local create_data = {
             table_type = table_type,
             cost = cost,
@@ -405,19 +379,20 @@ local room_handler = {}
 function room_handler.REQ_CREATE_FRIEND_TABLE(msg,client_fd)
     local uid = player.uid
     local table_type = msg.table_type
+    local game_type = math_floor(table_type/10000)
     local count = 0
 
-    if table_def.ddz_ftable_map[table_type] then
+    if game_type == table_def.GAME_TYPE_DDZ then
         if not check_ddz_ftable_conf(table_type,msg.ddz_create_conf) then
             send_to_gateway('room.RSP_CREATE_FRIEND_TABLE',{result = error_code.INPUT_ERROR})
             return
         end
         count = msg.ddz_create_conf.count
-    elseif table_def.xuezhan_ftable_map[table_type] then
-        -- if not check_xuezhan_ftable_conf(msg.xuezhan_create_conf) then
-        --     send_to_gateway('room.RSP_CREATE_FRIEND_TABLE',{result = error_code.INPUT_ERROR})
-        --     return
-        -- end
+    elseif game_type == table_def.GAME_TYPE_XUEZHAN then
+        if not check_xuezhan_ftable_conf(msg.xuezhan_create_conf) then
+            send_to_gateway('room.RSP_CREATE_FRIEND_TABLE',{result = error_code.INPUT_ERROR})
+            return
+        end
         count = msg.xuezhan_create_conf.total_count
     else
         errlog("unkown table type!!!!",table_type)
@@ -1429,9 +1404,9 @@ local M = {
     login = {},
     table = table_handler,
     daily = daily_handler,
-    mail = mail_handler,
-    hall = hall_handler,
-    room = room_handler,
+    mail  = mail_handler,
+    hall  = hall_handler,
+    room  = room_handler,
 }
 
 function M._init_(player_,send_to_gateway_,global_configs_)
